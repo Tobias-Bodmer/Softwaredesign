@@ -1,1 +1,3 @@
-console.log("Hello World")
+namespace L02_HelloWorld {
+    console.log("Hello World");
+}
