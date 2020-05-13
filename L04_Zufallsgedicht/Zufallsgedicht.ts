@@ -1,6 +1,6 @@
 namespace Zufallsgedicht {
     let subjects: string[] = ["San", "Ashitaka", "Moro", "Eboshi", "Okoto", "Nago"];
-    let verbs: string[] = [" liebt ", " hasst ", " zerstört ", " tötet ", " bekämpft ", " kennt "];
+    let verbs: string[] = [" liebt ", " hasst ", " zerstört ", " tötet ", " bekämpft ", " kennt "]; // Was machen die Leerzeichen da? Array-Elemente sollten möglichst clean sein.
     let objects: string[] = ["den Waldgott", "die Natur", "die Eisenhütte", "den Wald", "Asano", "den Kaiser"];
 
     let newPoem: string[] = [];
@@ -22,9 +22,9 @@ namespace Zufallsgedicht {
 
     function getVerse(): string {
         let newVerse: string = "";
-        let randomSubjectInd: number = Math.floor(Math.random() * subjects.length);
-        let randomeVerbInd: number = Math.floor(Math.random() * subjects.length);
-        let randomeObjectInd: number = Math.floor(Math.random() * subjects.length);
+        let randomSubjectInd: number = Math.floor(Math.random() * subjects.length); // Statt "Ind" als Suffix besser "i" als Präfix verwenden
+        let randomeVerbInd: number = Math.floor(Math.random() * subjects.length); // Statt "Ind" als Suffix besser "i" als Präfix verwenden
+        let randomeObjectInd: number = Math.floor(Math.random() * subjects.length); // Statt "Ind" als Suffix besser "i" als Präfix verwenden
 
         newVerse += subjects.splice(randomSubjectInd, 1);
         newVerse += verbs.splice(randomeVerbInd, 1);
