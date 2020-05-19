@@ -4,9 +4,9 @@ namespace Wortverdreher {
     reverseWords(sentence);
     reverseWords(reverseSentence(sentence));
 
-    function reverseSentence(satz: string): string {
+    function reverseSentence(satz: string): string { // warum hier "satz" statt weiterhin "sentence"? // formal parameters brauchen ein "_" als prefix
         let i: number = 1;
-        let revsatz: string = "";
+        let revsatz: string = ""; // Besser wäre "reversedSentence"
 
         while (i <= satz.length) {
             revsatz += satz[satz.length - i];
@@ -17,10 +17,10 @@ namespace Wortverdreher {
         return revsatz;
     }
 
-    function reverseWords(satz: string): void {
+    function reverseWords(satz: string): void { // warum hier "satz" statt weiterhin "sentence"? // formal parameters brauchen ein "_" als prefix
         let i: number = 1;
-        let revsatz: string = "";
-        let splittedSatz: string[] = satz.split(" ");
+        let revsatz: string = ""; // Besser wäre "reversedSentence"
+        let splittedSatz: string[] = satz.split(" "); // Besser wäre "splittedSentence"
 
         while (i <= splittedSatz.length) {
             revsatz += splittedSatz[splittedSatz.length - i] + " ";
