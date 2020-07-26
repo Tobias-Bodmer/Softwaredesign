@@ -6,7 +6,7 @@ var Wortverdreher;
     reverseWords(reverseSentence(sentence));
     function reverseSentence(satz) {
         let i = 1;
-        let revsatz = "";
+        let revsatz = ""; // Besser wäre "reversedSentence"
         while (i <= satz.length) {
             revsatz += satz[satz.length - i];
             i++;
@@ -16,8 +16,8 @@ var Wortverdreher;
     }
     function reverseWords(satz) {
         let i = 1;
-        let revsatz = "";
-        let splittedSatz = satz.split(" ");
+        let revsatz = ""; // Besser wäre "reversedSentence"
+        let splittedSatz = satz.split(" "); // Besser wäre "splittedSentence"
         while (i <= splittedSatz.length) {
             revsatz += splittedSatz[splittedSatz.length - i] + " ";
             i++;

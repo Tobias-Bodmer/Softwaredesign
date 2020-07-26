@@ -1,0 +1,36 @@
+body {
+    background-color: black;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    text-align: center;
+    align-items: center;
+    width: 50%;
+    min-width: 800px;
+    height: 100%;
+}
+h1 {
+    text-transform: uppercase;
+    font-size: 50px;
+    font-family: "Bodoni MT";
+    padding: 2%;
+}
+#img {
+    width: 90%;
+    min-height: 200px;
+}
+#output {
+    width: 90%;
+    min-height: 450px;
+    font-family: "Algerian";
+    font-size: large;
+}
+#input {
+    padding-top: 2%;
+    width: 90%;
+}
+input {
+    width: 90%;
+    height: 100%;
+}

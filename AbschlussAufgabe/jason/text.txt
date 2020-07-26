@@ -1,0 +1,46 @@
+"rooms": [
+        {
+            "roomId": 1,
+            "roomName": "",
+            "rommDescriptions": "",
+            "direcctions": [1, 2, 3]
+        },
+        {
+            "roomId": 2,
+            "roomName": "",
+            "rommDescriptions": "",
+            "direcctions": [1, 2, 3]
+        },
+        {
+            "roomId": 3,
+            "roomName": "",
+            "rommDescriptions": "",
+            "direcctions": [1, 2, 3]
+        },
+        {
+            "roomId": 4,
+            "roomName": "",
+            "rommDescriptions": "",
+            "direcctions": [1, 2, 3]
+        },
+        {
+            "roomId": 5,
+            "roomName": "",
+            "rommDescriptions": "",
+            "direcctions": [1, 2, 3]
+        }
+    ],
+    "npcs": [
+        {
+            "id": 1,
+            "name": "",
+            "dialog": "",
+            "position": ""
+        },
+        {
+            "id": 2,
+            "name": "",
+            "dialog": "",
+            "position": ""
+        }
+    ],

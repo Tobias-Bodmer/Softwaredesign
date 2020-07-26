@@ -1,0 +1,90 @@
+{
+    "rooms": [
+        {
+            "roomId": 1001,
+            "roomName": "Crossway",
+            "roomDescriptions": "You are in the middle of a graveyard.",
+            "directions": [1003, 1005, 1002, 1004],
+            "event": ""
+        },
+        {
+            "roomId": 1002,
+            "roomName": "The well",
+            "roomDescriptions": "",
+            "directions": [1001, -1, -1, -1],
+            "event": "sword"
+        },
+        {
+            "roomId": 1003,
+            "roomName": "Scary dark side",
+            "roomDescriptions": "It's very dark. But wait what is this there is something sparkling in the dark.",
+            "directions": [-1, -1, 1001, -1],
+            "event": ""
+        },
+        {
+            "roomId": 1004,
+            "roomName": "Entrance gate",
+            "roomDescriptions": "",
+            "directions": [-1, 1001, -1, -1],
+            "event": "win"
+        },
+        {
+            "roomId": 1005,
+            "roomName": "Dead end",
+            "roomDescriptions": "",
+            "directions": [-1, -1, -1, 1001],
+            "event": ""
+        }
+    ],
+    "npcs": [
+        {
+            "id": 2001,
+            "name": "Skeleton",
+            "dialog": [
+                "ggrr!"
+            ],
+            "position": 1003,
+            "neededItemToKill": 3002
+        },
+        {
+            "id": 2002,
+            "name": "Gohst",
+            "dialog": [
+                "",
+                "becareful i saw some creepy mosters out here.",
+                "wow look a old well. Will it work if you bring the right items?",
+                "...",
+                "thats the entrance. Maybe you can finde the key.",
+                "i don't think you can go any further this way."
+            ],
+            "position": 1001,
+            "neededItemToKill": -1
+        }
+    ],
+    "items":[
+        {
+            "id": 3001,
+            "name": "Bucket",
+            "position": 1005,
+            "destination": 1002
+        },
+        {
+            "id": 3002,
+            "name": "Sword",
+            "position": -5,
+            "destination": -1
+        },
+        {
+            "id": 3003,
+            "name": "Crank",
+            "position": 1004,
+            "destination": 1002
+        },
+        {
+            "id": 3004,
+            "name": "Key",
+            "position": 2001,
+            "destination": 1004
+        }
+    ]
+}
