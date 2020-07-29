@@ -1,7 +1,6 @@
 namespace TextAdventure {
     export class Npc extends Character {
         id: number;
-        name: string;
         dialog: string[];
         position: number;
         neededItemToKill: number;
@@ -15,12 +14,14 @@ namespace TextAdventure {
         getDialog(): string {
             let output: string = "";
             let dialogIndex: string = this.position.toString();
+
             dialogIndex = dialogIndex.substring(dialogIndex.length - 1, dialogIndex.length);
             if (this.dialog[+dialogIndex] != undefined && this.dialog.length > 1) {
                 output = this.dialog[+dialogIndex];
             } else if (this.dialog.length == 1) {
                 output = this.dialog[0];
             }
+
             return output;
         }
 

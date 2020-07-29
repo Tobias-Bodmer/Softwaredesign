@@ -4,19 +4,20 @@ namespace TextAdventure {
         roomName: string;
         roomDescriptions: string;
         directions: number[];
-        enteredFirstTime: boolean;
+        entered: boolean;
         npcs: Npc[];
         items: Item[];
         event: string;
 
         constructor() {
-            this.enteredFirstTime = true;
+            this.entered = true;
             this.npcs = [];
             this.items = [];
         }
 
         getDescription(): string {
             let output: string = this.roomName;
+
             if (this.roomDescriptions.length > 0) {
                 output += "<br />" + this.roomDescriptions;
             }
@@ -29,14 +30,13 @@ namespace TextAdventure {
                 output += "<br />" + "Also you see" + this.getItems();
             }
 
-            console.log(output);
-
             return output;
         }
 
         getNpcs(): string {
             let output: string = "";
             let vocal: string[] = ["a", "e", "i", "o", "u"];
+
             for (let i: number = 0; i < this.npcs.length; i++) {
                 let firstLetter: string[] = this.npcs[i].getName().toLowerCase().split("");
                 if (vocal.includes(firstLetter[0])) {
@@ -46,12 +46,14 @@ namespace TextAdventure {
                 }
                 output += ", ";
             }
+
             return output.substring(0, (output.length - 2)) + ".";
         }
 
         getItems(): string {
             let output: string = "";
             let vocal: string[] = ["a", "e", "i", "o", "u"];
+
             for (let i: number = 0; i < this.items.length; i++) {
                 let firstLetter: string[] = this.items[i].getName().toLowerCase().split("");
                 if (vocal.includes(firstLetter[0])) {
@@ -61,6 +63,7 @@ namespace TextAdventure {
                 }
                 output += ", ";
             }
+            
             return output.substring(0, (output.length - 2)) + ".";
         }
     }

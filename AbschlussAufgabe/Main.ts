@@ -1,48 +1,43 @@
 namespace TextAdventure {
     const output: HTMLDivElement = document.getElementById("output") as HTMLDivElement;
     const input: HTMLInputElement = document.getElementById("text") as HTMLInputElement;
+    const newGameFile: string = "./jason/NewGame.json";
 
-    //let flag: boolean = false;
-    //input.addEventListener("keypress", (e: KeyboardEvent) => {if (e.key === "Enter") { flag = true; } }, false);
-
-    function getEventListenter(): Promise<string> {
-        input.focus();
-        return new Promise(function (resolve: (value: string) => void): void {
-            const keydownEvent: EventListener = (event: Event) => {
-                if ((event as KeyboardEvent).key === "Enter") {
-                    const value: string = input.value;
-                    input.value = "";
-                    input.removeEventListener("keydown", keydownEvent);
-                    resolve(value);
-                }
-            };
-            input.addEventListener("keydown", keydownEvent);
-        });
-    }
-
-    let items: Item[] = [];
-    let npcs: Npc[] = [];
-    let rooms: Room[] = [];
-    let player: Player = new Player();
-    player.position = 1001;
-    let menu: string = "Script loaded <br/> Make your choice: start, load, quit";
+    let items: Item[];
+    let npcs: Npc[];
+    let rooms: Room[];
+    let player: Player;
+    let quitFlag: boolean;
+    let startMenu: string;
 
     main();
 
+    function iniVariables(): void {
+        items = [];
+        npcs = [];
+        rooms = [];
+        player = new Player();
+        player.position = 1001;
+        quitFlag = false;
+        startMenu = "Script loaded <br/> Make your choice: start, load, quit";
+    }
+
     async function main(): Promise<void> {
-        output.innerHTML = menu;
+        iniVariables();
+        output.innerHTML = "";
+        output.innerHTML = startMenu;
 
-        let b: string = await getEventListenter();
+        let userChoice: string = await getUserInput();
 
-        switch (b.toLowerCase().split("")[0]) {
+        switch (userChoice.toLowerCase().split("")[0]) {
             case "s":
                 startGame();
                 break;
             case "l":
-                //load();
+                loadGame();
                 break;
             case "q":
-                //quit();
+                window.close();
                 break;
             default:
                 main();
@@ -52,31 +47,33 @@ namespace TextAdventure {
 
     async function startGame(): Promise<void> {
         output.innerHTML = "<p></br></p>";
-        await load("./jason/Game.json");
+        await load(newGameFile);
 
         while (true) {
             await playerControl();
+
+            //If player want to quit the flag is true and break the loop.
+            if (quitFlag) {
+                quitFlag = false;
+                break;
+            }
         }
     }
 
     async function load(_filename: string): Promise<void> {
-        console.log(_filename);
-
         let response: Response = await fetch(_filename);
         let text: string = await response.text();
         let json: Object = JSON.parse(text);
-
-        console.log(json);
 
         convert(json);
         assign();
     }
 
-    function convert(element: Object): void {
-        for (let key in element) {
+    function convert(_element: Object): void {
+        for (let key in _element) {
             if (key == "rooms") {
                 let resArray: Room[] = new Array();
-                for (let room of element.rooms) {
+                for (let room of _element.rooms) {
                     let room1: Room = new Room();
                     room1.roomId = room.roomId;
                     room1.roomName = room.roomName;
@@ -90,7 +87,7 @@ namespace TextAdventure {
             }
             if (key == "items") {
                 let resArray: Item[] = new Array();
-                for (let item of element.items) {
+                for (let item of _element.items) {
                     let item1: Item = new Item();
                     item1.id = item.id;
                     item1.name = item.name;
@@ -103,7 +100,7 @@ namespace TextAdventure {
             }
             if (key == "npcs") {
                 let resArray: Npc[] = new Array();
-                for (let npc of element.npcs) {
+                for (let npc of _element.npcs) {
                     let npc1: Npc = new Npc();
                     npc1.id = npc.id;
                     npc1.name = npc.name;
@@ -123,47 +120,55 @@ namespace TextAdventure {
     }
 
     function assign(): void {
+        let roomMaxId: number = 2000;
+        let roomMinId: number = 1000;
+        let npcMaxId: number = 3000;
+        let npcMinId: number = 2000;
+        let playerInvId: number = -1;
+
         for (let npc of npcs) {
-            if (npc.position > 1000 && npc.position < 2000) {
+            if (npc.position > roomMinId && npc.position < roomMaxId) {
                 rooms.find(room => room.roomId == npc.position).npcs.push(npc);
             }
         }
+
         for (let item of items) {
-            if (item.position > 1000 && item.position < 2000) {
+            if (item.position > roomMinId && item.position < roomMaxId) {
                 rooms.find(room => room.roomId == item.position).items.push(item);
-            } else if (item.position > 2000 && item.position < 3000) {
+            } else if (item.position > npcMinId && item.position < npcMaxId) {
                 npcs.find(npc => npc.id == item.position).inventory.push(item);
-            } else if (item.position == -1) {
+            } else if (item.position == playerInvId) {
                 player.inventory.push(item);
             }
         }
     }
 
     async function playerControl(): Promise<void> {
-        let userChoice: string;
+        whatUserCanDo();
 
-        whatIsTrue();
-
-        if (rooms.find(room => room.roomId == player.position).enteredFirstTime) {
+        if (rooms.find(room => room.roomId == player.position).entered) {
             output.innerHTML += look();
-            rooms.find(room => room.roomId == player.position).enteredFirstTime = false;
+            rooms.find(room => room.roomId == player.position).entered = false;
         }
 
         output.innerHTML += "<p>" + player.interactionMenu() + "</p>";
-        userChoice = await getEventListenter();
+        
+        let userInput: string = await getUserInput();
+        let userCommand: string = userInput.split(" ")[0];
+        let userSelection: string = userInput.split(" ")[1];
 
-        switch (userChoice.toLowerCase().split("")[0]) {
+        switch (userCommand) {
             case "w":
             case "walk":
-                output.innerHTML = walk(userChoice.split(" ")[1]);
+                output.innerHTML = walk(userSelection);
                 break;
             case "d":
             case "drop":
-                output.innerHTML = dropItem(userChoice.split(" ")[1]);
+                output.innerHTML = dropItem(userSelection);
                 break;
             case "t":
             case "take":
-                output.innerHTML = take(userChoice.split(" ")[1]);
+                output.innerHTML = take(userSelection);
                 break;
             case "l":
             case "look":
@@ -171,11 +176,11 @@ namespace TextAdventure {
                 break;
             case "a":
             case "attack":
-                output.innerHTML = attack(userChoice.split(" ")[1]);
+                output.innerHTML = attack(userSelection);
                 break;
             case "s":
             case "speak":
-                output.innerHTML = talk(userChoice.split(" ")[1]);
+                output.innerHTML = talk(userSelection);
                 break;
             case "i":
             case "inventory":
@@ -190,7 +195,22 @@ namespace TextAdventure {
         }
     }
 
-    function whatIsTrue(): void {
+    function getUserInput(): Promise<string> {
+        input.focus();
+        return new Promise(function (resolve: (value: string) => void): void {
+            const keydownEvent: EventListener = (event: Event) => {
+                if ((event as KeyboardEvent).key === "Enter") {
+                    const value: string = input.value;
+                    input.value = "";
+                    input.removeEventListener("keydown", keydownEvent);
+                    resolve(value);
+                }
+            };
+            input.addEventListener("keydown", keydownEvent);
+        });
+    }
+
+    function whatUserCanDo(): void {
         let playerRoom: Room = rooms.find(room => room.roomId == player.position);
         if (playerRoom.items.length > 0) {
             player.canTake = true;
@@ -214,9 +234,9 @@ namespace TextAdventure {
         }
     }
 
-    function talk(npcName: string): string {
+    function talk(_npcName: string): string {
         let output: string;
-        let npc: Npc = npcs.find(npc => npc.name.toLowerCase() == npcName.toLowerCase());
+        let npc: Npc = npcs.find(npc => npc.name.toLowerCase() == _npcName.toLowerCase());
         let playerRoom: Room = rooms.find(room => room.roomId == player.position);
         if (playerRoom.npcs.find(npc => npc == npc) != undefined) { 
             if (npc.getDialog().length > 0) {
@@ -230,51 +250,51 @@ namespace TextAdventure {
         return output;
     }
 
-    function take(itemName: string): string {
+    function take(_itemName: string): string {
         let output: string;
         let vocal: string[] = ["a", "e", "i", "o", "u"];
-        let itemId: number = items.find(item => item.name.toLowerCase() == itemName.toLowerCase()).id;
+        let item: Item = items.find(item => item.name.toLowerCase() == _itemName.toLowerCase());
         let playerRoom: Room = rooms.find(room => room.roomId == player.position);
-        if (playerRoom.items.find(item => item.id == itemId) != undefined) {
-            let getItem: Item = playerRoom.items.find(item => item.id == itemId);
-            player.inventory.push(getItem);
-            playerRoom.items = playerRoom.items.filter(item => item.id !== itemId);
-            let firstLetter: string[] = itemName.toLowerCase().split("");
+        
+        if (playerRoom.items.find(item => item.id == item.id) != undefined) {
+            player.inventory.push(item);
+            playerRoom.items = playerRoom.items.filter(item => item.id !== item.id);
+            let firstLetter: string[] = _itemName.toLowerCase().split("");
             if (vocal.includes(firstLetter[0])) {
-                output = "You took an " + getItem.name + ".";
+                output = "You took an " + item.name + ".";
             } else {
-                output = "You took a " + getItem.name + ".";
+                output = "You took a " + item.name + ".";
             }
-            getItem.position = -1;
+            item.position = -1;
         } else {
             output = "You can't do this right now.";
         }
+        
         return output;
     }
 
-    function dropItem(itemName: string): string {
+    function dropItem(_itemName: string): string {
         let output: string;
-        let itemId: number = items.find(item => item.name.toLowerCase() == itemName.toLowerCase()).id;
-        console.log(itemId);
+        let item: Item = items.find(item => item.name.toLowerCase() == _itemName.toLowerCase());
         let playerRoom: Room = rooms.find(room => room.roomId == player.position);
-        if (player.inventory.find(item => item.id == itemId) != undefined) {
-            let getItem: Item = player.inventory.find(item => item.id == itemId); playerRoom.items.find(item => item.id == itemId);
-            playerRoom.items.push(getItem);
-            player.inventory = player.inventory.filter(item => item.id != itemId);
-            getItem.position = playerRoom.roomId;
-            output = "You droped " + getItem.name + ".";
-            if (getItem.observer()) {
-                if (items.filter(item => item.destination == getItem.destination).length <= 1) {
+        
+        if (player.inventory.find(item => item.id == item.id) != undefined) {
+            playerRoom.items.push(item);
+            player.inventory = player.inventory.filter(item => item.id != item.id);
+            item.position = playerRoom.roomId;
+            output = "You droped " + item.name + ".";
+
+            if (item.observer()) {
+                if (items.filter(item => item.destination == item.destination).length <= 1) {
                     output += "</br>" + itemEventHandler();
                 } else {
-                    let observerCalls: Item[] = items.filter(item => item.destination == getItem.destination);
-                    observerCalls = observerCalls.filter(item => item.id != getItem.id);
+                    let observerCalls: Item[] = items.filter(item => item.destination == item.destination);
                     let areAllTrue: boolean[] = []; 
+
+                    observerCalls = observerCalls.filter(item => item != item);
                     for (let element of observerCalls) {
                         areAllTrue.push(element.observer()); 
                     }
-                    console.log(areAllTrue.filter(element => element == false).length < 1);
-                    console.log(areAllTrue.find(element => element == false));
                     if (areAllTrue.filter(element => element == false).length < 1) {
                         output += "</br>" + itemEventHandler();
                     }
@@ -283,6 +303,7 @@ namespace TextAdventure {
         } else {
             output = "You can't do this right now.";
         }
+
         return output;
     }
     
@@ -290,10 +311,11 @@ namespace TextAdventure {
         return rooms.find(room => room.roomId == player.position).getDescription();
     }
 
-    function walk(direction: string): string {
+    function walk(_direction: string): string {
         let output: string = "<p>You can't walk this way.</p>";
-        rooms.find(room => room.roomId == player.position).enteredFirstTime = true;
-        switch (direction.toLowerCase().split("")[0]) {
+
+        rooms.find(room => room.roomId == player.position).entered = true;
+        switch (_direction) {
             case "n":
             case "north":
                 if (rooms.find(room => room.roomId == player.position).directions[0] > 0) {
@@ -329,46 +351,53 @@ namespace TextAdventure {
             default:
                 break;
         }
+
         return output;
     }
 
-    function gohstWalk(): void{
+    function gohstWalk(): void {
         let gohst: Npc = npcs.find(npc => npc.id == 2002);
         let playerRoom: Room = rooms.find(room => room.roomId == player.position);
         let gohstRoom: Room = rooms.find(room => room.roomId == gohst.position);
+
         gohstRoom.npcs = gohstRoom.npcs.filter(npc => npc != gohst);
         playerRoom.npcs.push(gohst);
         gohst.position = playerRoom.roomId;
     }
 
-    function attack(npcName: string): string {
+    function attack(_npcName: string): string {
         let output: string;
-        let npc: Npc = npcs.find(npc => npc.name.toLowerCase() == npcName.toLowerCase());
+        let npc: Npc = npcs.find(npc => npc.name.toLowerCase() == _npcName.toLowerCase());
         let playerRoom: Room = rooms.find(room => room.roomId == player.position);
+
         if (playerRoom.npcs.find(thisNpc => thisNpc == npc)) {
             if (npc.isKillable(player.inventory)) {
                 let items: string = npc.getInventory();
                 Array.prototype.push.apply(player.inventory, npc.inventory);
                 npc.inventory = [];
                 npc.id = -1;
-                output = "You strok him down and found" + items;
+                output = "You stroke him down and found" + items;
             } else {
                 output = "You can't win this fight. Maybe you need an item.";
             }
         } else {
             output = "You can't do this right now!"; 
         }
+
         return output;
     }
 
     function quit(): void {
-        //save();
+        quitFlag = true;
+        
+        save();
         main();
     }
 
     function itemEventHandler(): string {
-        let output: string = "";
+        let output: string;
         let playerRoom: Room = rooms.find(room => room.roomId == player.position);
+        
         switch (playerRoom.event) {
             case "sword":
                 player.inventory.push(items.find(item => item.id == 3002));
@@ -380,6 +409,107 @@ namespace TextAdventure {
             default:
                 break;
         }
+        
         return output;
-    } 
+    }
+    
+    function save(): void {
+        let json: string = "{ \"rooms\": [";
+        
+        for (let room of rooms) {
+            json += "{ \"roomId\": " + room.roomId + ", ";
+            json += "\"roomName\": \"" + room.roomName + "\", ";
+            json += "\"directions\": [";
+            for (let num of room.directions) {
+                json += num + ",";
+            }
+            json = json.substring(0, json.length - 1);
+            json += "], ";
+            json += "\"roomDescriptions\": \"" + room.roomDescriptions + "\", ";
+            json += "\"event\": \"" + room.event + "\"}, ";
+        }
+        json = json.substring(0, json.length - 2);
+        json += " ], \"npcs\":[ "; 
+        for (let npc of npcs) {
+            json += "{ \"id\": " + npc.id + ", ";
+            json += "\"name\": \"" + npc.name + "\", ";
+            json += "\"dialog\": [";
+            for (let str of npc.dialog) {
+                json += "\"" + str + "\",";
+            }
+            json = json.substring(0, json.length - 1);
+            json += "], ";
+            json += "\"position\": " + npc.position + ", ";
+            json += "\"neededItemToKill\": " + npc.neededItemToKill + "}, ";
+        }
+        json = json.substring(0, json.length - 2);
+        json += " ], \"items\":[ "; 
+        for (let item of items) {
+            json += "{ \"id\": " + item.id + ", ";
+            json += "\"name\": \"" + item.name + "\", ";
+            json += "\"position\": " + item.position + ", ";
+            json += "\"destination\": " + item.destination + "}, ";
+        }
+        json = json.substring(0, json.length - 2);
+        json += "] }";
+        
+        let jsonObject: Object = JSON.parse(json);
+        let data: string = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonObject));
+        let hiddenElement: HTMLAnchorElement = document.createElement("a");
+
+        document.body.appendChild(hiddenElement);
+        hiddenElement.href = "data:" + data;
+        hiddenElement.download = "SaveState.json";
+        hiddenElement.click();
+        document.body.removeChild(hiddenElement);
+    }
+
+    function loadGame(): void {
+        iniVariables();
+        
+        let load: HTMLInputElement = document.createElement("input") as HTMLInputElement;
+        load.style.visibility = "hidden";
+        load.setAttribute("type", "file");
+        load.setAttribute("value", "Import");
+        document.body.appendChild(load);
+        
+        let clickEvent: Event = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", true, false);
+        load.dispatchEvent(clickEvent);
+
+        load.addEventListener("change", function(): void {getJson(load); }, false);
+
+        document.body.removeChild(load);
+    }
+    
+    async function getJson(_load: HTMLInputElement): Promise<void> {
+        let saveGame: string = "";
+        output.innerHTML = "loading...";        
+
+        saveGame = await readFileContent(_load.files.item(0));
+        let json: Object = JSON.parse(saveGame);
+        
+        convert(json);
+        assign();
+
+        setTimeout(async function(): Promise<void> {
+            output.innerHTML = "";
+            while (true) {
+                await playerControl();
+                if (quitFlag) {
+                    quitFlag = false;
+                    break;
+                }
+            }
+        },         1000);
+    }
+
+    function readFileContent(_file: File): Promise<string> {
+        const fileReader: FileReader = new FileReader();
+        return new Promise((resolve, reject) => {
+            fileReader.onload = event => resolve(event.target.result.toString());
+            fileReader.onerror = error => reject(error);
+            fileReader.readAsText(_file);
+        });
+    }
 }        

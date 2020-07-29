@@ -3,7 +3,7 @@ var TextAdventure;
 (function (TextAdventure) {
     class Room {
         constructor() {
-            this.enteredFirstTime = true;
+            this.entered = true;
             this.npcs = [];
             this.items = [];
         }
@@ -21,7 +21,6 @@ var TextAdventure;
             if (this.items.length > 0) {
                 output += "<br />" + "Also you see" + this.getItems();
             }
-            console.log(output);
             return output;
         }
         getNpcs() {
