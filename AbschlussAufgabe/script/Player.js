@@ -7,9 +7,7 @@ var TextAdventure;
         }
         interactionMenu() {
             let output;
-            output = "walk(w) direction, ";
-            output += "look(l), ";
-            output += "inventory(i), ";
+            output = "Commands: look(l), walk(w) direction, ";
             if (this.canTake) {
                 output += "take(t) item, ";
             }
@@ -22,7 +20,8 @@ var TextAdventure;
             if (this.canAttack) {
                 output += "attack(a) npc, ";
             }
-            output += "quit.";
+            output += "inventory(i), ";
+            output += "quit(q).";
             return output;
         }
     }

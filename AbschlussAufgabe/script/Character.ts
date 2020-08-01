@@ -29,7 +29,7 @@ namespace TextAdventure {
                 }
                 return output.substring(0, (output.length - 2)) + ".";
             } else {
-                return "There is nothing.";
+                return "nothing";
             }
         }
     }

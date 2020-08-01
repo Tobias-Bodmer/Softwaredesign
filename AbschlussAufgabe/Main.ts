@@ -74,45 +74,45 @@ namespace TextAdventure {
             if (key == "rooms") {
                 let resArray: Room[] = new Array();
                 for (let room of _element.rooms) {
-                    let room1: Room = new Room();
-                    room1.roomId = room.roomId;
-                    room1.roomName = room.roomName;
-                    room1.roomDescriptions = room.roomDescriptions;
-                    room1.directions = room.directions;
-                    room1.event = room.event;
-                    console.dir(room1);
-                    resArray.push(room1);
+                    let newRoom: Room = new Room();
+                    newRoom.roomId = room.roomId;
+                    newRoom.roomName = room.roomName;
+                    newRoom.roomDescriptions = room.roomDescriptions;
+                    newRoom.directions = room.directions;
+                    newRoom.event = room.event;
+                    console.dir(newRoom);
+                    resArray.push(newRoom);
                 }
                 rooms = resArray;
             }
             if (key == "items") {
                 let resArray: Item[] = new Array();
                 for (let item of _element.items) {
-                    let item1: Item = new Item();
-                    item1.id = item.id;
-                    item1.name = item.name;
-                    item1.position = item.position;
-                    item1.destination = item.destination;
-                    console.dir(item1);
-                    resArray.push(item1);
+                    let newItem: Item = new Item();
+                    newItem.id = item.id;
+                    newItem.name = item.name;
+                    newItem.position = item.position;
+                    newItem.destination = item.destination;
+                    console.dir(newItem);
+                    resArray.push(newItem);
                 }
                 items = resArray;
             }
             if (key == "npcs") {
                 let resArray: Npc[] = new Array();
                 for (let npc of _element.npcs) {
-                    let npc1: Npc = new Npc();
-                    npc1.id = npc.id;
-                    npc1.name = npc.name;
-                    npc1.dialog = npc.dialog;
-                    npc1.position = npc.position;
+                    let newNpc: Npc = new Npc();
+                    newNpc.id = npc.id;
+                    newNpc.name = npc.name;
+                    newNpc.dialog = npc.dialog;
+                    newNpc.position = npc.position;
                     if (npc.neededItemToKill != undefined) {
-                        npc1.neededItemToKill = npc.neededItemToKill;
+                        newNpc.neededItemToKill = npc.neededItemToKill;
                     } else {
-                        npc1.neededItemToKill = -1;
+                        newNpc.neededItemToKill = -1;
                     }
-                    console.dir(npc1);
-                    resArray.push(npc1);
+                    console.dir(newNpc);
+                    resArray.push(newNpc);
                 }
                 npcs = resArray;
             }
@@ -234,6 +234,65 @@ namespace TextAdventure {
         }
     }
 
+    function look(): string {
+        return rooms.find(room => room.roomId == player.position).getDescription();
+    }
+
+    function walk(_direction: string): string {
+        let output: string = "<p>You can't walk this way.</p>";
+
+        let playerRoom: Room = rooms.find(room => room.roomId == player.position);
+        playerRoom.entered = true;
+        switch (_direction) {
+            case "n":
+            case "north":
+                if (playerRoom.directions[0] > 0) {
+                    player.position = rooms.find(room => room.roomId == playerRoom.directions[0]).roomId;
+                    gohstWalk();
+                    output = "<p>You walked in the north.</p>";
+                }
+                break;
+            case "e":
+            case "east":
+                if (playerRoom.directions[1] > 0) {
+                    player.position = rooms.find(room => room.roomId == playerRoom.directions[1]).roomId;
+                    gohstWalk();
+                    output = "<p>You walked in the east.</p>";
+                }
+                break;
+            case "s":
+            case "south":
+                if (playerRoom.directions[2] > 0) {
+                    player.position = rooms.find(room => room.roomId == playerRoom.directions[2]).roomId;
+                    gohstWalk();
+                    output = "<p>You walked in the south.</p>";
+                }
+                break;
+            case "w":
+            case "west":
+                if (playerRoom.directions[3] > 0) {
+                    player.position = rooms.find(room => room.roomId == playerRoom.directions[3]).roomId;
+                    gohstWalk();
+                    output = "<p>You walked in the west.</p>";
+                }
+                break;
+            default:
+                break;
+        }
+
+        return output;
+    }
+
+    function gohstWalk(): void {
+        let gohst: Npc = npcs.find(npc => npc.id == 2002);
+        let playerRoom: Room = rooms.find(room => room.roomId == player.position);
+        let gohstRoom: Room = rooms.find(room => room.roomId == gohst.position);
+
+        gohstRoom.npcs = gohstRoom.npcs.filter(npc => npc != gohst);
+        playerRoom.npcs.push(gohst);
+        gohst.position = playerRoom.roomId;
+    }
+
     function talk(_npcName: string): string {
         let output: string;
         let npc: Npc = npcs.find(npc => npc.name.toLowerCase() == _npcName.toLowerCase());
@@ -283,23 +342,7 @@ namespace TextAdventure {
             player.inventory = player.inventory.filter(item => item.id != item.id);
             item.position = playerRoom.roomId;
             output = "You droped " + item.name + ".";
-
-            if (item.observer()) {
-                if (items.filter(item => item.destination == item.destination).length <= 1) {
-                    output += "</br>" + itemEventHandler();
-                } else {
-                    let observerCalls: Item[] = items.filter(item => item.destination == item.destination);
-                    let areAllTrue: boolean[] = []; 
-
-                    observerCalls = observerCalls.filter(item => item != item);
-                    for (let element of observerCalls) {
-                        areAllTrue.push(element.observer()); 
-                    }
-                    if (areAllTrue.filter(element => element == false).length < 1) {
-                        output += "</br>" + itemEventHandler();
-                    }
-                }
-            }
+            output += itemObserverCall(item);
         } else {
             output = "You can't do this right now.";
         }
@@ -307,72 +350,36 @@ namespace TextAdventure {
         return output;
     }
     
-    function look(): string {
-        return rooms.find(room => room.roomId == player.position).getDescription();
-    }
+    function itemObserverCall(_item: Item): string {
+        let output: string;
+        if (_item.observer()) {
+            if (items.filter(item => item.destination == item.destination).length <= 1) {
+                output = "</br>" + itemEventHandler();
+            } else {
+                let observerCalls: Item[] = items.filter(item => item.destination == item.destination);
+                let areAllTrue: boolean[] = []; 
 
-    function walk(_direction: string): string {
-        let output: string = "<p>You can't walk this way.</p>";
-
-        rooms.find(room => room.roomId == player.position).entered = true;
-        switch (_direction) {
-            case "n":
-            case "north":
-                if (rooms.find(room => room.roomId == player.position).directions[0] > 0) {
-                    player.position = rooms.find(room => room.roomId == rooms.find(room => room.roomId == player.position).directions[0]).roomId;
-                    gohstWalk();
-                    output = "<p>You walked in the north.</p>";
+                observerCalls = observerCalls.filter(item => item != item);
+                for (let element of observerCalls) {
+                    areAllTrue.push(element.observer()); 
                 }
-                break;
-            case "e":
-            case "east":
-                if (rooms.find(room => room.roomId == player.position).directions[1] > 0) {
-                    player.position = rooms.find(room => room.roomId == rooms.find(room => room.roomId == player.position).directions[1]).roomId;
-                    gohstWalk();
-                    output = "<p>You walked in the east.</p>";
+                if (areAllTrue.filter(element => element == false).length < 1) {
+                    output = "</br>" + itemEventHandler();
                 }
-                break;
-            case "s":
-            case "south":
-                if (rooms.find(room => room.roomId == player.position).directions[2] > 0) {
-                    player.position = rooms.find(room => room.roomId == rooms.find(room => room.roomId == player.position).directions[2]).roomId;
-                    gohstWalk();
-                    output = "<p>You walked in the south.</p>";
-                }
-                break;
-            case "w":
-            case "west":
-                if (rooms.find(room => room.roomId == player.position).directions[3] > 0) {
-                    player.position = rooms.find(room => room.roomId == rooms.find(room => room.roomId == player.position).directions[3]).roomId;
-                    gohstWalk();
-                    output = "<p>You walked in the west.</p>";
-                }
-                break;
-            default:
-                break;
+            }
         }
-
         return output;
-    }
-
-    function gohstWalk(): void {
-        let gohst: Npc = npcs.find(npc => npc.id == 2002);
-        let playerRoom: Room = rooms.find(room => room.roomId == player.position);
-        let gohstRoom: Room = rooms.find(room => room.roomId == gohst.position);
-
-        gohstRoom.npcs = gohstRoom.npcs.filter(npc => npc != gohst);
-        playerRoom.npcs.push(gohst);
-        gohst.position = playerRoom.roomId;
     }
 
     function attack(_npcName: string): string {
         let output: string;
         let npc: Npc = npcs.find(npc => npc.name.toLowerCase() == _npcName.toLowerCase());
         let playerRoom: Room = rooms.find(room => room.roomId == player.position);
+        let items: string;
 
         if (playerRoom.npcs.find(thisNpc => thisNpc == npc)) {
             if (npc.isKillable(player.inventory)) {
-                let items: string = npc.getInventory();
+                items = npc.getInventory();
                 Array.prototype.push.apply(player.inventory, npc.inventory);
                 npc.inventory = [];
                 npc.id = -1;
