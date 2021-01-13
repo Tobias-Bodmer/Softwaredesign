@@ -493,7 +493,7 @@ namespace TextAdventure {
         let saveGame: string = "";
         output.innerHTML = "loading...";        
 
-        saveGame = await readFileContent(_load.files.item(0));
+        saveGame = await readFileContent(_load.files.item(0));    
         let json: Object = JSON.parse(saveGame);
         
         convert(json);
